@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/jageros/hawos/log"
-	"github.com/jageros/hawos/protos/pb"
+	"github.com/jageros/hawos/protos/pbf"
 	"github.com/jageros/hawos/recover"
 	"github.com/jageros/hawos/transport"
 	http2 "github.com/jageros/hawos/transport/http"
@@ -35,7 +35,7 @@ type Target struct {
 	UnlessUids []string
 }
 
-func (t *Target) CopyPbTarget(tg *pb.Target) *Target {
+func (t *Target) CopyPbTarget(tg *pbf.Target) *Target {
 	t.GroupId = tg.GroupId
 	t.Uids = tg.Uids
 	t.UnlessUids = tg.UnlessUids
