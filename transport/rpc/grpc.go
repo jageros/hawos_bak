@@ -14,7 +14,7 @@ package rpc
 
 import (
 	"context"
-	protoc2 "github.com/jageros/hawos/protoc"
+	"github.com/jageros/hawos/protoc"
 	"github.com/jageros/hawos/protos/pbf"
 	"google.golang.org/grpc"
 )
@@ -23,7 +23,7 @@ type server struct {
 }
 
 func (s *server) ReqCall(ctx context.Context, arg *pbf.ReqArg) (*pbf.RespMsg, error) {
-	resp, err := protoc2.OnRouterRpcCall(arg)
+	resp, err := protoc.OnRouterRpcCall(arg)
 	if err != nil {
 		return nil, err
 	}
