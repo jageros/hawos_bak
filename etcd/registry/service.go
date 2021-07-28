@@ -2,10 +2,10 @@ package registry
 
 import (
 	"encoding/json"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/registry"
 )
 
-func marshal(si *registry2.ServiceInstance) (string, error) {
+func marshal(si *registry.ServiceInstance) (string, error) {
 	data, err := json.Marshal(si)
 	if err != nil {
 		return "", err
@@ -13,7 +13,7 @@ func marshal(si *registry2.ServiceInstance) (string, error) {
 	return string(data), nil
 }
 
-func unmarshal(data []byte) (si *registry2.ServiceInstance, err error) {
+func unmarshal(data []byte) (si *registry.ServiceInstance, err error) {
 	err = json.Unmarshal(data, &si)
 	return
 }

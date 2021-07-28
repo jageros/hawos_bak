@@ -10,28 +10,28 @@
  *
  */
 
-package httpc
+package http
 
 import (
-	"github.com/jageros/hawos/consts"
 	"net/http"
 )
 
-//const (
-//	HTTP_HD_APP_TOKEN   = "X-App-Token"
-//	HTTP_HD_APP_UID     = "X-App-Uid"
-//	HTTP_HD_CLIENT_TYPE = "X-Client-Type"
-//	HTTP_HD_APPID       = "X-Appid"
-//	HTTP_HD_REQUEST_ID  = "X-App-Request-Id" // 用来进行bug查找和问题跟踪用的
-//	HTTP_HD_APP_VERSION = "X-App-Version"
-//)
+// http header
+const (
+	HTTP_HD_APP_TOKEN   = "X-App-Token"
+	HTTP_HD_APP_UID     = "X-App-Uid"
+	HTTP_HD_CLIENT_TYPE = "X-Client-Type"
+	HTTP_HD_APPID       = "X-Appid"
+	HTTP_HD_REQUEST_ID  = "X-App-Request-Id" // 用来进行bug查找和问题跟踪用的
+	HTTP_HD_APP_VERSION = "X-App-Version"
+)
 
 func DefaultHeader() map[string]string {
 	return map[string]string{
-		consts.HTTP_HD_APPID:       "10004",
-		consts.HTTP_HD_CLIENT_TYPE: "1",
-		consts.HTTP_HD_APP_VERSION: "0",
-		consts.HTTP_HD_REQUEST_ID:  "-1",
+		HTTP_HD_APPID:       "xxx",
+		HTTP_HD_CLIENT_TYPE: "1",
+		HTTP_HD_APP_VERSION: "0",
+		HTTP_HD_REQUEST_ID:  "-1",
 	}
 }
 

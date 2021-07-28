@@ -15,8 +15,8 @@ package wsc
 import (
 	"context"
 	"github.com/gorilla/websocket"
-	"github.com/jageros/hawos/internal/pkg/log"
-	recover3 "github.com/jageros/hawos/recover"
+	"github.com/jageros/hawos/log"
+	"github.com/jageros/hawos/recover"
 	"net/http"
 	"sync"
 	"time"
@@ -57,7 +57,7 @@ func (s *Session) RegistryHandle(f func(uid string, data []byte)) {
 }
 
 func (s *Session) Write(p []byte) (n int, err error) {
-	err = recover3.CatchPanic(func() error {
+	err = recover.CatchPanic(func() error {
 		select {
 		case <-s.Ctx.Done():
 			return s.Ctx.Err()
@@ -102,7 +102,7 @@ func (s *Session) startHandleMsg(g *sync.WaitGroup) {
 			return
 		case msg := <-s.readMsgChan:
 			if s.Handle != nil {
-				err := recover3.CatchPanic(func() error {
+				err := recover.CatchPanic(func() error {
 					s.Handle(s.Id, msg.data)
 					return nil
 				})
@@ -117,7 +117,7 @@ func (s *Session) startHandleMsg(g *sync.WaitGroup) {
 func (s *Session) read() <-chan *readMsg {
 	ch := make(chan *readMsg)
 	go func() {
-		recover3.CatchPanic(func() error {
+		recover.CatchPanic(func() error {
 			var msg *readMsg
 			err := s.conn.SetReadDeadline(time.Now().Add(s.readTimeout))
 			if err == nil {

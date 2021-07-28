@@ -15,12 +15,12 @@ package flags
 import (
 	"flag"
 	"fmt"
-	db2 "github.com/jageros/hawos/db"
-	etcd2 "github.com/jageros/hawos/etcd"
+	"github.com/jageros/hawos/db"
+	"github.com/jageros/hawos/etcd"
 	"github.com/jageros/hawos/log"
-	mode2 "github.com/jageros/hawos/mode"
-	transport2 "github.com/jageros/hawos/transport"
-	yaml2 "github.com/jageros/hawos/yaml"
+	"github.com/jageros/hawos/mode"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/yaml"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"strconv"
 	"strings"
@@ -30,15 +30,15 @@ import (
 type optFunc func(opt *Option)
 
 var (
-	Mode        = mode2.DebugMode
+	Mode        = mode.DebugMode
 	LogLevel    = log.DebugLevel
-	HttpOption  transport2.SvrOpFn
-	RpcOption   transport2.SvrOpFn
-	WsOption    transport2.SvrOpFn
-	NsqOption   transport2.SvrOpFn
-	KafkaOption transport2.SvrOpFn
-	EtcdOption  etcd2.OpFn
-	RedisOption db2.OpFn
+	HttpOption  transport.SvrOpFn
+	RpcOption   transport.SvrOpFn
+	WsOption    transport.SvrOpFn
+	NsqOption   transport.SvrOpFn
+	KafkaOption transport.SvrOpFn
+	EtcdOption  etcd.OpFn
+	RedisOption db.OpFn
 	Options     *Option
 )
 
@@ -81,7 +81,7 @@ func vString(elem, defaultVal, val string) string {
 	return elem
 }
 
-func (op *Option) parseFromYaml(cfg *yaml2.Config) {
+func (op *Option) parseFromYaml(cfg *yaml.Config) {
 	if cfg != nil {
 		if cfg.AppID != 0 {
 			op.ID = cfg.AppID
@@ -194,7 +194,7 @@ func Parse(name string, opts ...optFunc) {
 	Options = new(Option)
 	*Options = *dp
 	if *path != "" {
-		cfg := yaml2.Parse(*path)
+		cfg := yaml.Parse(*path)
 		Options.parseFromYaml(cfg)
 	}
 
@@ -219,26 +219,26 @@ func Parse(name string, opts ...optFunc) {
 	}
 
 	switch *modeStr {
-	case mode2.TestMode.String():
-		Mode = mode2.TestMode
-	case mode2.ReleaseMode.String():
-		Mode = mode2.ReleaseMode
+	case mode.TestMode.String():
+		Mode = mode.TestMode
+	case mode.ReleaseMode.String():
+		Mode = mode.ReleaseMode
 		LogLevel = log.InfoLevel
 	}
 
-	HttpOption = func(opt *transport2.Option) {
+	HttpOption = func(opt *transport.Option) {
 		opt.Ip = Options.HttpIp
 		opt.Port = uint16(Options.HttpPort)
 		opt.Mode = Mode
 	}
 
-	RpcOption = func(opt *transport2.Option) {
+	RpcOption = func(opt *transport.Option) {
 		opt.Ip = Options.RpcIp
 		opt.Port = uint16(Options.RpcPort)
 		opt.Mode = Mode
 	}
 
-	WsOption = func(opt *transport2.Option) {
+	WsOption = func(opt *transport.Option) {
 		opt.Ip = Options.WsIp
 		opt.Port = uint16(Options.WsPort)
 		opt.ReadTimeout = time.Second * 120
@@ -254,8 +254,8 @@ func Parse(name string, opts ...optFunc) {
 	}
 
 	redisAddrs := strings.Split(Options.RedisAddrs, ";")
-	RedisOption = func(opt *db2.Option) {
-		opt.Type = db2.Redis
+	RedisOption = func(opt *db.Option) {
+		opt.Type = db.Redis
 		opt.DBName = strconv.Itoa(Options.RedisDBNo)
 		opt.Addrs = redisAddrs
 		opt.Username = Options.RedisUser
@@ -263,14 +263,14 @@ func Parse(name string, opts ...optFunc) {
 	}
 
 	nsqAddrs := strings.Split(Options.NsqAddrs, ";")
-	NsqOption = func(opt *transport2.Option) {
-		opt.Protocol = transport2.Nsq
+	NsqOption = func(opt *transport.Option) {
+		opt.Protocol = transport.Nsq
 		opt.Endpoints = nsqAddrs
 	}
 
 	kafkaAddrs := strings.Split(Options.KafkaAddrs, ";")
-	KafkaOption = func(opt *transport2.Option) {
-		opt.Protocol = transport2.Kafka
+	KafkaOption = func(opt *transport.Option) {
+		opt.Protocol = transport.Kafka
 		opt.Endpoints = kafkaAddrs
 	}
 }

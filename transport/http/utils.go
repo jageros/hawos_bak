@@ -14,8 +14,8 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
-	errcode2 "github.com/jageros/hawos/errcode"
-	jwt2 "github.com/jageros/hawos/jwt"
+	"github.com/jageros/hawos/errcode"
+	"github.com/jageros/hawos/jwt"
 	"github.com/jageros/hawos/log"
 	"net/http"
 	"net/url"
@@ -31,7 +31,7 @@ func DecodeUrlVal(c *gin.Context, key string) string {
 }
 
 func PkgMsgWrite(c *gin.Context, data interface{}) {
-	code := errcode2.Success
+	code := errcode.Success
 	dataMap := gin.H{"code": code.Code(), "msg": code.ErrMsg()}
 	if data != nil {
 		dataMap["data"] = data
@@ -40,7 +40,7 @@ func PkgMsgWrite(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, dataMap)
 }
 
-func ErrInterrupt(c *gin.Context, err errcode2.IErr) {
+func ErrInterrupt(c *gin.Context, err errcode.IErr) {
 	log.Errorf("ErrorInterrupt %s", err.Error())
 	c.JSON(http.StatusOK, gin.H{"code": err.Code(), "msg": err.ErrMsg()})
 	c.Abort()
@@ -49,17 +49,17 @@ func ErrInterrupt(c *gin.Context, err errcode2.IErr) {
 func CheckToken(c *gin.Context) {
 	token := DecodeUrlVal(c, "token")
 	if token == "" {
-		ErrInterrupt(c, errcode2.VerifyErr)
+		ErrInterrupt(c, errcode.VerifyErr)
 		return
 	}
-	claims, err := jwt2.ParseToken(token)
+	claims, err := jwt.ParseToken(token)
 	if err != nil {
 		log.Infof("ParseToken err: %v", err)
-		ErrInterrupt(c, errcode2.VerifyErr)
+		ErrInterrupt(c, errcode.VerifyErr)
 		return
 	}
 	if time.Now().Unix() > claims.ExpiresAt {
-		ErrInterrupt(c, errcode2.VerifyErr)
+		ErrInterrupt(c, errcode.VerifyErr)
 		return
 	}
 	c.Next()
@@ -69,9 +69,9 @@ func RefreshToken(c *gin.Context) (token string, err error) {
 	token = DecodeUrlVal(c, "token")
 	if token == "" {
 		log.Infof("Get token from url error, not has token value.")
-		err = errcode2.VerifyErr
+		err = errcode.VerifyErr
 		return
 	}
-	token, err = jwt2.RefreshToken(token)
+	token, err = jwt.RefreshToken(token)
 	return
 }

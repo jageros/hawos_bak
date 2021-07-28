@@ -16,8 +16,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/jageros/hawos/log"
-	protoc2 "github.com/jageros/hawos/protoc"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/protoc"
+	"github.com/jageros/hawos/registry"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"time"
 )
@@ -128,13 +128,13 @@ func New(ctx context.Context, client *clientv3.Client, opts ...Option) (r *Regis
 	}
 
 	r.watchChan = r.watcher.Watch(r.opts.ctx, r.opts.namespace, clientv3.WithPrefix(), clientv3.WithRev(0))
-	r.watcher.RequestProgress(context.Background())
+	r.watcher.RequestProgress(r.opts.ctx)
 	return
 }
 
 // Register the registration.
-func (r *Registry) Register(_ registry2.Registrar) error {
-	msgIds := protoc2.MsgIDs()
+func (r *Registry) Register(_ registry.Registrar) error {
+	msgIds := protoc.MsgIDs()
 	if len(msgIds) <= 0 {
 		return nil
 	}

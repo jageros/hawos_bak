@@ -2,7 +2,7 @@ package registry
 
 import (
 	"context"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/registry"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"testing"
 	"time"
@@ -18,7 +18,7 @@ func TestRegistry(t *testing.T) {
 	defer client.Close()
 
 	ctx := context.Background()
-	s := &registry2.ServiceInstance{
+	s := &registry.ServiceInstance{
 		ID:   "0",
 		Name: "helloworld",
 	}

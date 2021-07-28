@@ -1,9 +1,6 @@
 syntax = "proto3";
 
-package pb;
-
-import "errcode.proto";
-import "msgid.proto";
+package pbf;
 
 service Router {
   rpc ReqCall (ReqArg) returns (RespMsg) {}
@@ -11,13 +8,12 @@ service Router {
 
 message ReqArg {
   string Uid = 1;
-  string SessionId = 2;
-  MsgID MsgID = 3;
-  bytes Payload = 4;
+  int32 MsgID = 2;
+  bytes Payload = 3;
 }
 
 message RespMsg {
-  MsgID MsgID = 1;
-  ErrCode Code = 2;
+  int32 MsgID = 1;
+  int32 Code = 2;
   bytes Payload = 3;
 }

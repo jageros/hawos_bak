@@ -15,8 +15,8 @@ package ws
 import (
 	"context"
 	"github.com/gorilla/websocket"
-	"github.com/jageros/hawos/internal/pkg/log"
-	recover2 "github.com/jageros/hawos/recover"
+	"github.com/jageros/hawos/log"
+	"github.com/jageros/hawos/recover"
 	"sync"
 	"time"
 )
@@ -56,7 +56,7 @@ type session struct {
 }
 
 func (s *session) Write(p []byte) (n int, err error) {
-	err = recover2.CatchPanic(func() error {
+	err = recover.CatchPanic(func() error {
 		select {
 		case <-s.Ctx.Done():
 			return s.Ctx.Err()
@@ -105,7 +105,7 @@ func (s *session) startHandleMsg(g *sync.WaitGroup, handles ...OnReadHandle) {
 				g.Add(1)
 				go func(sid string, handle OnReadHandle, data []byte) {
 					defer g.Done()
-					err := recover2.CatchPanic(func() error {
+					err := recover.CatchPanic(func() error {
 						handle(sid, data, s)
 						return nil
 					})

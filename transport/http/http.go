@@ -15,28 +15,29 @@ package http
 import (
 	"context"
 	"fmt"
-	mode2 "github.com/jageros/hawos/mode"
-	transport2 "github.com/jageros/hawos/transport"
 	"net"
 	"net/http"
+
+	"github.com/jageros/hawos/mode"
+	"github.com/jageros/hawos/transport"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	*transport2.BaseServer
+	*transport.BaseServer
 	svr *http.Server
 }
 
-func New(ctx context.Context, opfs ...transport2.SvrOpFn) *Server {
+func New(ctx context.Context, opfs ...transport.SvrOpFn) *Server {
 	s := &Server{
-		BaseServer: transport2.NewBaseServer(ctx, opfs...),
+		BaseServer: transport.NewBaseServer(ctx, opfs...),
 	}
 
-	s.Options.Protocol = transport2.HTTP
+	s.Options.Protocol = transport.HTTP
 
-	if s.Options.Mode == mode2.ReleaseMode {
+	if s.Options.Mode == mode.ReleaseMode {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		gin.SetMode(gin.DebugMode)

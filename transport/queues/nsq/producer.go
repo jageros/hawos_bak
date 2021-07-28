@@ -15,23 +15,22 @@ package nsq
 import (
 	"context"
 	"fmt"
-	errcode2 "github.com/jageros/hawos/errcode"
+	"github.com/jageros/hawos/errcode"
 	"github.com/jageros/hawos/log"
 	"github.com/jageros/hawos/protos/meta"
-	_ "github.com/jageros/hawos/protos/meta"
-	"github.com/jageros/hawos/protos/pb"
-	transport2 "github.com/jageros/hawos/transport"
-	httpc2 "github.com/jageros/hawos/transport/http/httpc"
-	queues2 "github.com/jageros/hawos/transport/queues"
+	"github.com/jageros/hawos/protos/pbf"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/transport/http/httpc"
+	"github.com/jageros/hawos/transport/queues"
 	"github.com/nsqio/go-nsq"
 	"math/rand"
 	"sync"
 )
 
-var _ queues2.IQueue = &Producer{}
+var _ queues.IQueue = &Producer{}
 
 type Producer struct {
-	*transport2.BaseServer
+	*transport.BaseServer
 	topic string
 	pd    *nsq.Producer
 	cfg   *nsq.Config
@@ -41,14 +40,14 @@ type Producer struct {
 func (p *Producer) getNodeAddr() (string, error) {
 	idx := rand.Intn(len(p.Options.Endpoints))
 	url := fmt.Sprintf("http://%s/nodes", p.Options.Endpoints[idx])
-	resp, err := httpc2.Request(httpc2.GET, url, httpc2.FORM, nil, nil)
+	resp, err := httpc.Request(httpc.GET, url, httpc.FORM, nil, nil)
 	if err != nil {
 		return "", err
 	}
 	pds := resp["producers"].([]interface{})
 	pdn := len(pds)
 	if pdn <= 0 {
-		return "", errcode2.New(11, "无可用NSQ节点")
+		return "", errcode.New(101, "无可用NSQ节点")
 	}
 	idx = rand.Intn(len(pds))
 	pd := pds[idx].(map[string]interface{})
@@ -82,8 +81,8 @@ func (p *Producer) connectToNsqd() error {
 	return nil
 }
 
-func (p *Producer) PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Target) error {
-	im, err := meta.GetMeta(msgId.ID())
+func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target) error {
+	im, err := meta.GetMeta(msgId)
 	if err != nil {
 		return err
 	}
@@ -91,23 +90,23 @@ func (p *Producer) PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Targ
 	if err != nil {
 		return err
 	}
-	resp := &pb.Response{
+	resp := &pbf.Response{
 		MsgID:   msgId,
-		Code:    pb.ErrCode_Success,
+		Code:    errcode.Success.Code(),
 		Payload: data,
 	}
 	data2, err := resp.Marshal()
 	if err != nil {
 		return err
 	}
-	msg := &pb.QueueMsg{
+	msg := &pbf.QueueMsg{
 		Data:    data2,
 		Targets: target,
 	}
 	return p.Push(msg)
 }
 
-func (p *Producer) Push(msg *pb.QueueMsg) error {
+func (p *Producer) Push(msg *pbf.QueueMsg) error {
 	data, err := msg.Marshal()
 	if err != nil {
 		return err
@@ -123,14 +122,14 @@ func (p *Producer) Push(msg *pb.QueueMsg) error {
 	return err
 }
 
-func NewProducer(ctx context.Context, topic string, opfs ...transport2.SvrOpFn) (*Producer, error) {
+func NewProducer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) (*Producer, error) {
 	p := &Producer{
-		BaseServer: transport2.NewBaseServer(ctx, opfs...),
+		BaseServer: transport.NewBaseServer(ctx, opfs...),
 		topic:      topic,
 		clk:        &sync.Mutex{},
 	}
 
-	p.Options.Protocol = transport2.Nsq
+	p.Options.Protocol = transport.Nsq
 
 	p.cfg = nsq.NewConfig()
 	err := p.connectToNsqd()

@@ -15,12 +15,12 @@ package rpc
 import (
 	"context"
 	"fmt"
-	errcode2 "github.com/jageros/hawos/errcode"
+	"github.com/jageros/hawos/errcode"
 	"github.com/jageros/hawos/internal/conf"
 	"github.com/jageros/hawos/log"
-	registry2 "github.com/jageros/hawos/registry"
-	transport2 "github.com/jageros/hawos/transport"
-	discovery2 "github.com/jageros/hawos/transport/rpc/resolver/discovery"
+	"github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/transport/rpc/resolver/discovery"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/connectivity"
@@ -32,13 +32,13 @@ type RpcFn func(cc *grpc.ClientConn)
 type OpFn func(opt *Option)
 
 type Client interface {
-	DialWithFn(serviceName string, rpcFn RpcFn) errcode2.IErr
+	DialWithFn(serviceName string, rpcFn RpcFn) errcode.IErr
 }
 
 type client struct {
 	ctx    context.Context
 	cancel context.CancelFunc
-	d      registry2.Discovery
+	d      registry.Discovery
 	conns  map[string]*grpc.ClientConn // map[serverName]conn
 	option *Option
 
@@ -49,7 +49,7 @@ type client struct {
 type Option struct {
 	Id          string
 	Name        string
-	Type        transport2.ProtoTy
+	Type        transport.ProtoTy
 	ServerNames []string
 }
 
@@ -73,7 +73,7 @@ func ServerNames(name ...string) OpFn {
 	}
 }
 
-func NewClient(ctx context.Context, d registry2.Discovery, opFns ...OpFn) *client {
+func NewClient(ctx context.Context, d registry.Discovery, opFns ...OpFn) *client {
 	ctx2, cancel := context.WithCancel(ctx)
 	cli := &client{
 		ctx:    ctx2,
@@ -81,7 +81,7 @@ func NewClient(ctx context.Context, d registry2.Discovery, opFns ...OpFn) *clien
 		d:      d,
 		conns:  map[string]*grpc.ClientConn{},
 		option: &Option{
-			Type: transport2.RpcClient,
+			Type: transport.RpcClient,
 		},
 		rw:       &sync.RWMutex{},
 		NameChan: make(chan string, 64),
@@ -116,8 +116,8 @@ func (c *client) getConn(name string) (*grpc.ClientConn, error) {
 		return conn, nil
 	}
 
-	target := fmt.Sprintf("%s:///%s", discovery2.Name, name)
-	builder := discovery2.NewBuilder(c.ctx, c.d)
+	target := fmt.Sprintf("%s:///%s", discovery.Name, name)
+	builder := discovery.NewBuilder(c.ctx, c.d)
 
 	ctx, cancel := context.WithTimeout(c.ctx, conf.RPC_CALL_TIMEOUT)
 	defer cancel()
@@ -149,7 +149,7 @@ func (c *client) Serve() error {
 		}
 	}()
 
-	builder := discovery2.NewBuilder(c.ctx, c.d)
+	builder := discovery.NewBuilder(c.ctx, c.d)
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -161,7 +161,7 @@ func (c *client) Serve() error {
 			if ok {
 				continue
 			}
-			target := fmt.Sprintf("%s:///%s", discovery2.Name, name)
+			target := fmt.Sprintf("%s:///%s", discovery.Name, name)
 			cc, err := grpc.DialContext(
 				c.ctx,
 				target,
@@ -192,11 +192,11 @@ func (c *client) Info() string {
 
 // ---
 
-func (c *client) DialWithFn(serviceName string, rpcFn RpcFn) errcode2.IErr {
+func (c *client) DialWithFn(serviceName string, rpcFn RpcFn) errcode.IErr {
 	cc, err := c.getConn(serviceName)
 	if err != nil {
 		log.Errorf("DialWithFn getConn err: %v", err)
-		return errcode2.WithErrcode(-11, err)
+		return errcode.WithErrcode(-11, err)
 	}
 
 	state := cc.GetState()
@@ -210,6 +210,6 @@ func (c *client) DialWithFn(serviceName string, rpcFn RpcFn) errcode2.IErr {
 	} else {
 		errMsg := fmt.Sprintf("%s Service Conn NotReady!", serviceName)
 		log.Errorf(errMsg)
-		return errcode2.New(-22, errMsg)
+		return errcode.New(-22, errMsg)
 	}
 }

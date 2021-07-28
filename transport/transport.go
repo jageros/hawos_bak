@@ -15,10 +15,10 @@ package transport
 import (
 	"context"
 	"fmt"
-	"github.com/jageros/hawos/internal/pkg/internal/conf"
-	"github.com/jageros/hawos/internal/pkg/log"
-	mode2 "github.com/jageros/hawos/mode"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/internal/conf"
+	"github.com/jageros/hawos/log"
+	"github.com/jageros/hawos/mode"
+	"github.com/jageros/hawos/registry"
 	"strings"
 	"time"
 )
@@ -60,7 +60,7 @@ type IServer interface {
 }
 
 type IRegistry interface {
-	Register(registrar registry2.Registrar) error
+	Register(registrar registry.Registrar) error
 	Deregister()
 }
 
@@ -125,7 +125,7 @@ type Option struct {
 	Ip           string
 	Port         uint16 // 端口最大值：65535
 	Protocol     ProtoTy
-	Mode         mode2.MODE
+	Mode         mode.MODE
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 	CloseTimeout time.Duration
@@ -141,8 +141,8 @@ func (op *Option) endpoints() string {
 	return strings.Join(op.Endpoints, ";")
 }
 
-func (op *Option) BuildServiceInstance() *registry2.ServiceInstance {
-	return &registry2.ServiceInstance{
+func (op *Option) BuildServiceInstance() *registry.ServiceInstance {
+	return &registry.ServiceInstance{
 		ID:       op.ID,
 		Name:     op.Name,
 		Type:     op.Protocol.String(),
@@ -156,7 +156,7 @@ func DefaultOptions() *Option {
 		Ip:           defaultIp,
 		Port:         defaultPort,
 		Protocol:     TCP,
-		Mode:         mode2.DebugMode,
+		Mode:         mode.DebugMode,
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
 		CloseTimeout: closeTimeout,
@@ -175,7 +175,7 @@ func Port(port uint16) SvrOpFn {
 	}
 }
 
-func Mode(mode_ mode2.MODE) SvrOpFn {
+func Mode(mode_ mode.MODE) SvrOpFn {
 	return func(opt *Option) {
 		opt.Mode = mode_
 	}

@@ -2,12 +2,12 @@ package registry
 
 import (
 	"context"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/registry"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var (
-	_ registry2.Watcher = &watcher{}
+	_ registry.Watcher = &watcher{}
 )
 
 type watcher struct {
@@ -32,7 +32,7 @@ func newWatcher(ctx context.Context, key string, client *clientv3.Client) *watch
 	return w
 }
 
-func (w *watcher) Next() ([]*registry2.ServiceInstance, error) {
+func (w *watcher) Next() ([]*registry.ServiceInstance, error) {
 	select {
 	case <-w.ctx.Done():
 		return nil, w.ctx.Err()
@@ -42,7 +42,7 @@ func (w *watcher) Next() ([]*registry2.ServiceInstance, error) {
 	if err != nil {
 		return nil, err
 	}
-	var items []*registry2.ServiceInstance
+	var items []*registry.ServiceInstance
 	for _, kv := range resp.Kvs {
 		si, err := unmarshal(kv.Value)
 		if err != nil {

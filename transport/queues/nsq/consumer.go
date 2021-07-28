@@ -15,9 +15,9 @@ package nsq
 import (
 	"context"
 	"github.com/jageros/hawos/log"
-	"github.com/jageros/hawos/protos/pb"
-	transport2 "github.com/jageros/hawos/transport"
-	ws2 "github.com/jageros/hawos/transport/ws"
+	"github.com/jageros/hawos/protos/pbf"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/transport/ws"
 	"github.com/nsqio/go-nsq"
 	"time"
 )
@@ -26,19 +26,19 @@ type Consumer struct {
 	topic   string
 	channel string
 	csr     *nsq.Consumer
-	handler ws2.Writer
-	*transport2.BaseServer
+	handler ws.Writer
+	*transport.BaseServer
 }
 
-func NewConsumer(ctx context.Context, topic string, opts ...transport2.SvrOpFn) *Consumer {
+func NewConsumer(ctx context.Context, topic string, opts ...transport.SvrOpFn) *Consumer {
 	csr := &Consumer{
 		topic:      topic,
-		BaseServer: transport2.NewBaseServer(ctx, opts...),
+		BaseServer: transport.NewBaseServer(ctx, opts...),
 	}
 	return csr
 }
 
-func (c *Consumer) RegistryHandler(w ws2.Writer) {
+func (c *Consumer) RegistryHandler(w ws.Writer) {
 	c.handler = w
 }
 
@@ -48,14 +48,14 @@ func (c *Consumer) HandleMessage(msg *nsq.Message) error {
 		return nil
 	}
 
-	arg := &pb.QueueMsg{}
+	arg := &pbf.QueueMsg{}
 	err := arg.Unmarshal(msg.Body)
 	if err != nil {
 		log.Errorf("Nsq Consumer Unmarshal err: %v", err)
 		return err
 	}
 
-	target := new(ws2.Target).CopyPbTarget(arg.Targets)
+	target := new(ws.Target).CopyPbTarget(arg.Targets)
 	log.Debugf("Nsq consumer write msg to client, Target=%+v", target)
 	return c.handler.Write(arg.Data, target)
 }

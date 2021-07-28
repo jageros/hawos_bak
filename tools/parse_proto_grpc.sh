@@ -1,1 +1,0 @@
-protoc -I protos/pbsdef/ -I protos/pbdef/ protos/pbdef/*.proto protos/pbsdef/*.proto --gofast_out=plugins=grpc:protos/pb

@@ -17,20 +17,20 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	db2 "github.com/jageros/hawos/db"
+	"github.com/jageros/hawos/db"
 	"time"
 )
 
 var RDB *Redis
 
 type Redis struct {
-	*db2.Database
+	*db.Database
 	*redis.ClusterClient
 }
 
-func Initialize(ctx context.Context, opts ...db2.OpFn) {
+func Initialize(ctx context.Context, opts ...db.OpFn) {
 	RDB = &Redis{
-		Database: db2.NewDatabase(ctx, opts...),
+		Database: db.NewDatabase(ctx, opts...),
 	}
 
 	rcc := redis.NewClusterClient(&redis.ClusterOptions{

@@ -13,10 +13,10 @@
 package queues
 
 import (
-	"github.com/jageros/hawos/protos/pb"
+	"github.com/jageros/hawos/protos/pbf"
 )
 
 type IQueue interface {
-	PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Target) error
-	Push(msg *pb.QueueMsg) error
+	PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target) error
+	Push(msg *pbf.QueueMsg) error
 }

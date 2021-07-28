@@ -16,11 +16,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/jageros/hawos/consts"
-	"github.com/jageros/hawos/internal/pkg/log"
+	"github.com/jageros/hawos/log"
 	"github.com/jageros/hawos/protos/pb"
-	recover2 "github.com/jageros/hawos/recover"
-	transport2 "github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/recover"
+	"github.com/jageros/hawos/transport"
+	http2 "github.com/jageros/hawos/transport/http"
 	"net"
 	"net/http"
 	"sync"
@@ -57,7 +57,7 @@ func upgradeWsConn(w http.ResponseWriter, r *http.Request) (*websocket.Conn, err
 }
 
 type Server struct {
-	*transport2.BaseServer
+	*transport.BaseServer
 	svr          *http.Server
 	sessions     map[string]*session
 	readFn       []OnReadHandle
@@ -70,19 +70,13 @@ func (s *Server) ConnCnt() int {
 	return len(s.sessions)
 }
 
-//func (s *Server) Info() string {
-//	return fmt.Sprintf("ServerName=%s ServerType=%s Port=%d", s.options.Name, s.options.Protocol, s.options.Port)
-//}
-
-func New(ctx context.Context, opfs ...transport2.SvrOpFn) *Server {
+func New(ctx context.Context, opfs ...transport.SvrOpFn) *Server {
 	ss := &Server{
-		BaseServer: transport2.NewBaseServer(ctx, opfs...),
-		//ctx:      ctx,
-		//options:  transport.DefaultOptions(),
+		BaseServer: transport.NewBaseServer(ctx, opfs...),
 		sessions: map[string]*session{},
 		rw:       &sync.RWMutex{},
 	}
-	ss.Options.Protocol = transport2.WS
+	ss.Options.Protocol = transport.WS
 
 	addr := fmt.Sprintf("%s:%d", ss.Options.Ip, ss.Options.Port)
 	ss.svr = &http.Server{
@@ -97,7 +91,7 @@ func New(ctx context.Context, opfs ...transport2.SvrOpFn) *Server {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	uid := r.Header.Get(consts.HTTP_HD_APP_UID)
+	uid := r.Header.Get(http2.HTTP_HD_APP_UID)
 	if uid == "" || uid == "undefined" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -132,7 +126,7 @@ func (s *Server) sendToGroup(data []byte, groupId string, unlessUids ...string) 
 		unless[ulid] = true
 	}
 
-	return recover2.CatchPanic(func() error {
+	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
 		for _, sess := range s.sessions {
@@ -163,7 +157,7 @@ func (s *Server) sendUnless(data []byte, unlessUids ...string) error {
 		unless[ulid] = true
 	}
 
-	return recover2.CatchPanic(func() error {
+	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
 		for _, sess := range s.sessions {
@@ -189,7 +183,7 @@ func (s *Server) sendUnless(data []byte, unlessUids ...string) error {
 }
 
 func (s *Server) sendToUsers(data []byte, uids ...string) error {
-	return recover2.CatchPanic(func() error {
+	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
 		for _, sid := range uids {
@@ -228,7 +222,7 @@ func (s *Server) Write(data []byte, target *Target) error {
 }
 
 func (s *Server) Broadcast(data []byte) error {
-	return recover2.CatchPanic(func() error {
+	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
 		for _, sess := range s.sessions {

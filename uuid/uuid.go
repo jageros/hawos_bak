@@ -14,27 +14,38 @@ package uuid
 
 import (
 	"fmt"
-	"github.com/jageros/hawos/consts"
-	redis2 "github.com/jageros/hawos/db/redis"
+	"github.com/jageros/hawos/db/redis"
 	uuid "github.com/satori/go.uuid"
 	"math/rand"
 	"strconv"
 )
 
-func NewNumStr(key string) (string, error) {
+const (
+	baseUid = 81
+)
+
+func NewNum(key string) (int64, error) {
 	key = "uuid-" + key
-	num, err := redis2.Incr(key)
+	num, err := redis.Incr(key)
+	if err != nil {
+		return 0, err
+	}
+	return num, nil
+}
+
+func NewRandNumStr(key string) (string, error) {
+	key = "uuid-" + key
+	num, err := redis.Incr(key)
 	if err != nil {
 		return "", err
 	}
-	result := strconv.FormatInt(consts.BaseUid+num, 10)
+	result := strconv.FormatInt(baseUid+num, 10)
 	var uidStr string
 	for _, n := range result {
 		rn := rand.Intn(10)
 		uidStr += fmt.Sprintf("%c%d", n, rn)
 	}
 	return uidStr, nil
-
 }
 
 func New() string {

@@ -16,28 +16,28 @@ import (
 	"context"
 	"fmt"
 	"github.com/Shopify/sarama"
-	"github.com/jageros/hawos/internal/pkg/log"
-	"github.com/jageros/hawos/protos/pb"
-	transport2 "github.com/jageros/hawos/transport"
-	ws2 "github.com/jageros/hawos/transport/ws"
+	"github.com/jageros/hawos/log"
+	"github.com/jageros/hawos/protos/pbf"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/transport/ws"
 )
 
-var consumerHandler ws2.Writer
+var consumerHandler ws.Writer
 
-func SetConsumerHandles(w ws2.Writer) {
+func SetConsumerHandles(w ws.Writer) {
 	consumerHandler = w
 }
 
 type Consumer struct {
-	*transport2.BaseServer
+	*transport.BaseServer
 	topic   string
 	cg      sarama.ConsumerGroup
 	groupId string
 }
 
-func NewConsumer(ctx context.Context, topic string, opfs ...transport2.SvrOpFn) *Consumer {
+func NewConsumer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) *Consumer {
 	csr := &Consumer{
-		BaseServer: transport2.NewBaseServer(ctx, opfs...),
+		BaseServer: transport.NewBaseServer(ctx, opfs...),
 		topic:      topic,
 	}
 
@@ -111,14 +111,14 @@ func (h *handler) ConsumeClaim(assignment sarama.ConsumerGroupSession, claim sar
 			log.Infof("kafka ConsumeClaim recv msg=nil")
 			continue
 		}
-		kmsg := &pb.QueueMsg{}
+		kmsg := &pbf.QueueMsg{}
 		err := kmsg.Unmarshal(msg.Value)
 		if err != nil {
 			log.Errorf("kafka Unmarshal msg err=%v", err)
 			continue
 		}
 
-		target := new(ws2.Target).CopyPbTarget(kmsg.Targets)
+		target := new(ws.Target).CopyPbTarget(kmsg.Targets)
 		err = consumerHandler.Write(kmsg.Data, target)
 		if err != nil {
 			log.Errorf("kafka ConsumeClaim msg handle return err=%v", err)

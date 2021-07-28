@@ -14,20 +14,12 @@ package selector
 
 import (
 	"encoding/json"
-	uuid2 "github.com/jageros/hawos/uuid"
 )
 
 type metaData struct {
 	ID     string  `json:"id"`
 	Name   string  `json:"name"`
 	MsgIds []int32 `json:"msg_ids"`
-}
-
-func newMetaData(msgId []int32) *metaData {
-	return &metaData{
-		ID:     uuid2.New(),
-		MsgIds: msgId,
-	}
 }
 
 func marshal(md *metaData) (string, error) {

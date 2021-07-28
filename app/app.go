@@ -16,10 +16,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/jageros/hawos/log"
-	mode2 "github.com/jageros/hawos/mode"
-	registry2 "github.com/jageros/hawos/registry"
-	transport2 "github.com/jageros/hawos/transport"
-	uuid2 "github.com/jageros/hawos/uuid"
+	"github.com/jageros/hawos/mode"
+	"github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/uuid"
 	"github.com/oklog/oklog/pkg/group"
 	"github.com/oklog/run"
 	"syscall"
@@ -35,9 +35,9 @@ type OpFn func(options *Options)
 type Options struct {
 	appID    string
 	appName  string
-	mode     mode2.MODE
-	svrs     []transport2.IServer
-	register registry2.Registrar
+	mode     mode.MODE
+	svrs     []transport.IServer
+	register registry.Registrar
 }
 
 func ID(id interface{}) OpFn {
@@ -53,19 +53,19 @@ func Name(name string) OpFn {
 	}
 }
 
-func Mode(mode mode2.MODE) OpFn {
+func Mode(mode mode.MODE) OpFn {
 	return func(options *Options) {
 		options.mode = mode
 	}
 }
 
-func Servers(svrs ...transport2.IServer) OpFn {
+func Servers(svrs ...transport.IServer) OpFn {
 	return func(options *Options) {
 		options.svrs = svrs
 	}
 }
 
-func Registry(r registry2.Registrar) OpFn {
+func Registry(r registry.Registrar) OpFn {
 	return func(options *Options) {
 		options.register = r
 	}
@@ -83,10 +83,10 @@ func New(ctx context.Context, opfs ...OpFn) *Application {
 
 	if ap.options.appID == "" {
 		var err error
-		ap.options.appID, err = uuid2.NewNumStr("X-App-Id")
+		ap.options.appID, err = uuid.NewRandNumStr("X-App-Id")
 		if err != nil {
 			log.Errorf("NewAppId NewNumStr Err: %v", err)
-			ap.options.appID = uuid2.New()
+			ap.options.appID = uuid.New()
 		}
 	}
 
@@ -112,7 +112,7 @@ func (a *Application) Run() {
 			if err != nil {
 				return err
 			}
-			if ss, ok := s.(transport2.IRegistry); ok {
+			if ss, ok := s.(transport.IRegistry); ok {
 				err = ss.Register(a.options.register)
 				if err != nil {
 					return err
@@ -121,7 +121,7 @@ func (a *Application) Run() {
 
 			return s.Serve()
 		}, func(err error) {
-			if ss, ok := s.(transport2.IRegistry); ok {
+			if ss, ok := s.(transport.IRegistry); ok {
 				ss.Deregister()
 			}
 
@@ -138,5 +138,5 @@ func (a *Application) Run() {
 		errFn(err)
 	})
 
-	log.Errorf("========= ApplicationStop: %v =========", g.Run())
+	log.Infof(">>>>>>>>> ApplicationStop: 【%v】", g.Run())
 }

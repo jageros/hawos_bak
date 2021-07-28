@@ -16,28 +16,29 @@ import (
 	"context"
 	"fmt"
 	"github.com/Shopify/sarama"
-	"github.com/jageros/hawos/internal/pkg/log"
+	"github.com/jageros/hawos/errcode"
+	"github.com/jageros/hawos/log"
 	"github.com/jageros/hawos/protos/meta"
-	"github.com/jageros/hawos/protos/pb"
-	transport2 "github.com/jageros/hawos/transport"
-	queues2 "github.com/jageros/hawos/transport/queues"
+	"github.com/jageros/hawos/protos/pbf"
+	"github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/transport/queues"
 )
 
-var _ queues2.IQueue = &Producer{}
+var _ queues.IQueue = &Producer{}
 
 type Producer struct {
-	*transport2.BaseServer
+	*transport.BaseServer
 	topic string
 	pd    sarama.AsyncProducer
 }
 
-func NewProducer(ctx context.Context, topic string, opfs ...transport2.SvrOpFn) *Producer {
+func NewProducer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) *Producer {
 	pd := &Producer{
-		BaseServer: transport2.NewBaseServer(ctx, opfs...),
+		BaseServer: transport.NewBaseServer(ctx, opfs...),
 		topic:      topic,
 	}
 
-	pd.Options.Protocol = transport2.Kafka
+	pd.Options.Protocol = transport.Kafka
 
 	if len(pd.Options.Endpoints) <= 0 {
 		pd.Options.Endpoints = []string{fmt.Sprintf("%s:%d", pd.Options.Ip, pd.Options.Port)}
@@ -46,8 +47,8 @@ func NewProducer(ctx context.Context, topic string, opfs ...transport2.SvrOpFn) 
 	return pd
 }
 
-func (p *Producer) PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Target) error {
-	im, err := meta.GetMeta(msgId.ID())
+func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target) error {
+	im, err := meta.GetMeta(msgId)
 	if err != nil {
 		return err
 	}
@@ -55,9 +56,9 @@ func (p *Producer) PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Targ
 	if err != nil {
 		return err
 	}
-	resp := &pb.Response{
+	resp := &pbf.Response{
 		MsgID:   msgId,
-		Code:    pb.ErrCode_Success,
+		Code:    errcode.Success.Code(),
 		Payload: data,
 	}
 
@@ -66,7 +67,7 @@ func (p *Producer) PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Targ
 		return err
 	}
 
-	msg := &pb.QueueMsg{
+	msg := &pbf.QueueMsg{
 		Data:    msgData,
 		Targets: target,
 	}
@@ -74,7 +75,7 @@ func (p *Producer) PushProtoMsg(msgId pb.MsgID, arg interface{}, target *pb.Targ
 	return p.Push(msg)
 }
 
-func (p *Producer) Push(msg *pb.QueueMsg) error {
+func (p *Producer) Push(msg *pbf.QueueMsg) error {
 
 	byData, err := msg.Marshal()
 

@@ -16,6 +16,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	http2 "github.com/jageros/hawos/transport/http"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -66,7 +67,7 @@ func Request(method METHOD, url string, contentType string, arg map[string]inter
 
 	req.Header.Set("Content-Type", contentType)
 
-	SetHeader(req, header)
+	http2.SetHeader(req, header)
 
 	resp, err := cli.Do(req)
 	if err != nil {
