@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package pb;
+
+// 建立连接后验证
+//@ C2S_AUTH_TOKEN    req: AuthMsg    resp: AuthResp
+// 心跳
+//@ C2S_PING req: Ping  resp: Pong
+
+// 跨天通知客户端
+//@ S2C_CROSS_DAY req: CrossDayMsg
+
+import "errcode.proto";
+import "msgid.proto";
+
+message Request {
+  MsgID MsgID = 1;
+  string Token = 2;
+  bytes Payload = 3;
+}
+
+message Response {
+  MsgID MsgID = 1;
+  ErrCode Code = 2;
+  bytes Payload = 3;
+}
+
+message AuthMsg {
+  string Uid = 1;
+  string AppID = 2;
+  string Secret = 3;
+}
+
+message AuthResp {
+  string Token = 1;
+}
+
+message Ping {
+  string AppId = 1;
+  string Uid = 2;
+}
+
+message Pong {
+  int64 Timestamp = 1;
+}
+
+message CrossDayMsg {
+  int32 DayNo = 1;
+}

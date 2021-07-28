@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package pb;
+
+message QueueMsg {
+  bytes Data = 1;
+  Target Targets = 2;
+}
+
+message Target {
+  string GroupId = 1;
+  repeated string Uids = 2;
+  repeated string UnlessUids = 3;
+}

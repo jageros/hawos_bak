@@ -1,0 +1,6 @@
+builder
+logs
+pids
+.DS_Store
+*.log
+*.pprof

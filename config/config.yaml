@@ -1,0 +1,39 @@
+#app_id: 1
+listen:
+  http_ip: "0.0.0.0"
+  http_port: 8001
+  rpc_ip: "127.0.0.1"
+  rpc_port: 8051
+  ws_ip: "0.0.0.0"
+  ws_port: 8081
+  frontend_addr: "testapi.gzjy-game.xyz/ws"
+
+etcd:
+  addrs:
+    - "127.0.0.1:2379"
+#  user: ""
+#  password: ""
+
+redis:
+  addrs:
+    - "127.0.0.1:7001"
+    - "127.0.0.1:7002"
+    - "127.0.0.1:7003"
+    - "127.0.0.1:7004"
+    - "127.0.0.1:7005"
+    - "127.0.0.1:7006"
+  db: 0
+#  user: ""
+#  password: ""
+
+nsq:
+  addrs:
+    - "127.0.0.1:4161"
+  #  user: ""
+  #  password: ""
+
+kafka:
+  addrs:
+    - "127.0.0.1:9092"
+  #  user: ""
+  #  password: ""

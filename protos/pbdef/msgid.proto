@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pb;
+
+enum MsgID {
+  UNKNOW_MessageID = 0;
+
+  // 客户端请求服务端，协议id 100-9999
+  C2S_AUTH_TOKEN = 100;
+  C2S_PING = 101;
+  C2S_CREATE_ROOM = 102;
+  C2S_ENTER_ROOM = 103;
+  C2S_SEND_GLOBAL_MSG = 104;  // 发送群聊消息
+
+  // 服务端主动推送消息协议id：>= 10000
+  S2C_CROSS_DAY = 10000; // 服务端跨天通知
+  S2C_GLOBAL_MSG = 10001; // 广播群聊消息
+  S2C_BROADCAST_ROOM_INFO = 10002; // 广播房间消息
+}

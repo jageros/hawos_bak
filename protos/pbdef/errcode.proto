@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+enum ErrCode {
+  UNKNOWN_ERR_CODE = 0;
+  Success = 200; // 成功
+  ServiceNotFound = 404;  // 未找到该服务
+  MetaCoderNotFound = 405; // meta解码器未注册
+  ProtoMsgIdNoHandles = 406; // 该协议未注册
+
+  //  服务端内部错误 1000-9999
+  InternalErr = 1000; // 服务器内部错误
+
+  // 业务逻辑错误协 >= 10000
+  AuthErr = 10000; // 验证失败
+  InvalidParam = 10001; // 参数无效
+}
