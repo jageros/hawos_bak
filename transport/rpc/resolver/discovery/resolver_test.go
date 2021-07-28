@@ -2,7 +2,7 @@ package discovery
 
 import (
 	"context"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/registry"
 	"testing"
 	"time"
 
@@ -22,9 +22,9 @@ func (t *testClientConn) UpdateState(s resolver.State) error {
 type testWatch struct {
 }
 
-func (m *testWatch) Next() ([]*registry2.ServiceInstance, error) {
+func (m *testWatch) Next() ([]*registry.ServiceInstance, error) {
 	time.Sleep(time.Millisecond * 200)
-	ins := []*registry2.ServiceInstance{
+	ins := []*registry.ServiceInstance{
 		{
 			ID:      "mock_ID",
 			Name:    "mock_Name",

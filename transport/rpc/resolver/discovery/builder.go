@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"github.com/jageros/hawos/log"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/registry"
 
 	"google.golang.org/grpc/resolver"
 )
@@ -15,11 +15,11 @@ type Option func(o *builder)
 
 type builder struct {
 	ctx        context.Context
-	discoverer registry2.Discovery
+	discoverer registry.Discovery
 }
 
 // NewBuilder creates a builder which is used to factory registry resolvers.
-func NewBuilder(ctx context.Context, d registry2.Discovery, opts ...Option) resolver.Builder {
+func NewBuilder(ctx context.Context, d registry.Discovery, opts ...Option) resolver.Builder {
 	b := &builder{
 		ctx:        ctx,
 		discoverer: d,

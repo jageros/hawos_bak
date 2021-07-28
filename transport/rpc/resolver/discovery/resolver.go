@@ -3,7 +3,7 @@ package discovery
 import (
 	"context"
 	"github.com/jageros/hawos/log"
-	registry2 "github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/registry"
 	"time"
 
 	"google.golang.org/grpc/attributes"
@@ -11,7 +11,7 @@ import (
 )
 
 type discoveryResolver struct {
-	w  registry2.Watcher
+	w  registry.Watcher
 	cc resolver.ClientConn
 
 	ctx    context.Context
@@ -36,7 +36,7 @@ func (r *discoveryResolver) watch() {
 	}
 }
 
-func (r *discoveryResolver) update(ins []*registry2.ServiceInstance) {
+func (r *discoveryResolver) update(ins []*registry.ServiceInstance) {
 	var addrs []resolver.Address
 	for _, in := range ins {
 		//endpoint, err := parseEndpoint(in.Endpoints)

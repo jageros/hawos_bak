@@ -15,23 +15,23 @@ package rpc
 import (
 	"context"
 	"fmt"
-	registry2 "github.com/jageros/hawos/registry"
-	transport2 "github.com/jageros/hawos/transport"
+	"github.com/jageros/hawos/registry"
+	"github.com/jageros/hawos/transport"
 	"google.golang.org/grpc"
 	"net"
 )
 
 type Server struct {
-	*transport2.BaseServer
+	*transport.BaseServer
 	svr      *grpc.Server
-	register registry2.Registrar
+	register registry.Registrar
 }
 
-func New(ctx context.Context, opfs ...transport2.SvrOpFn) *Server {
+func New(ctx context.Context, opfs ...transport.SvrOpFn) *Server {
 	s := &Server{
-		BaseServer: transport2.NewBaseServer(ctx, opfs...),
+		BaseServer: transport.NewBaseServer(ctx, opfs...),
 	}
-	s.Options.Protocol = transport2.GRPC
+	s.Options.Protocol = transport.GRPC
 
 	s.svr = grpc.NewServer()
 
@@ -56,7 +56,7 @@ func (s *Server) Stop() {
 	s.svr.GracefulStop()
 }
 
-func (s *Server) Register(registrar registry2.Registrar) error {
+func (s *Server) Register(registrar registry.Registrar) error {
 	s.register = registrar
 	return s.register.Register(s.Ctx, s.Options.BuildServiceInstance())
 }
