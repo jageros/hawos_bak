@@ -17,3 +17,14 @@ message RespMsg {
   int32 Code = 2;
   bytes Payload = 3;
 }
+
+message QueueMsg {
+  bytes Data = 1;
+  Target Targets = 2;
+}
+
+message Target {
+  string GroupId = 1;
+  repeated string Uids = 2;
+  repeated string UnlessUids = 3;
+}
