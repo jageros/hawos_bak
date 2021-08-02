@@ -14,7 +14,6 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/jageros/hawos/log"
 	"github.com/jageros/hawos/protos/pbf"
@@ -41,10 +40,6 @@ func NewConsumer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) *
 		topic:      topic,
 	}
 
-	if len(csr.Options.Endpoints) <= 0 {
-		csr.Options.Endpoints = []string{fmt.Sprintf("%s:%d", csr.Options.Ip, csr.Options.Port)}
-	}
-
 	return csr
 }
 
@@ -53,7 +48,7 @@ func (c *Consumer) Init(id, name string) error {
 	c.Options.Name = name
 	c.groupId = id
 	config := sarama.NewConfig()
-	config.Consumer.Return.Errors = true
+	config.Consumer.Return.Errors = false
 	config.Version = sarama.V0_11_0_2
 
 	cli, err := sarama.NewClient(c.Options.Endpoints, config)

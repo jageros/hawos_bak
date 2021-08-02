@@ -14,7 +14,6 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/jageros/hawos/errcode"
 	"github.com/jageros/hawos/log"
@@ -39,10 +38,6 @@ func NewProducer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) *
 	}
 
 	pd.Options.Protocol = transport.Kafka
-
-	if len(pd.Options.Endpoints) <= 0 {
-		pd.Options.Endpoints = []string{fmt.Sprintf("%s:%d", pd.Options.Ip, pd.Options.Port)}
-	}
 
 	return pd
 }
