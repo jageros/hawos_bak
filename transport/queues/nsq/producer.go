@@ -25,6 +25,7 @@ import (
 	"github.com/nsqio/go-nsq"
 	"math/rand"
 	"sync"
+	"time"
 )
 
 var _ queues.IQueue = &Producer{}
@@ -82,6 +83,7 @@ func (p *Producer) connectToNsqd() error {
 }
 
 func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target) error {
+	start := time.Now()
 	im, err := meta.GetMeta(msgId)
 	if err != nil {
 		return err
@@ -103,7 +105,10 @@ func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target
 		Data:    data2,
 		Targets: target,
 	}
-	return p.Push(msg)
+	err = p.Push(msg)
+	take := time.Now().Sub(start).String()
+	log.Debugf("Nsq Push Msg take: %s", take)
+	return err
 }
 
 func (p *Producer) Push(msg *pbf.QueueMsg) error {

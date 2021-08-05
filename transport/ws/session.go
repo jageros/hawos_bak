@@ -176,6 +176,7 @@ func (s *session) startWriteMsg(g *sync.WaitGroup) {
 		case <-s.Ctx.Done():
 			return
 		case msg := <-s.writeMsgChan:
+			start := time.Now()
 			err := s.conn.SetWriteDeadline(time.Now().Add(s.writeTimeout))
 			if err != nil {
 				log.Errorf("Websocket SetWriteDeadline err=%v", err)
@@ -189,6 +190,8 @@ func (s *session) startWriteMsg(g *sync.WaitGroup) {
 				s.cancel()
 				return
 			}
+			take := time.Now().Sub(start).String()
+			log.Debugf("Write Msg to Client uid=%s take %s", s.uid, take)
 		}
 	}
 }

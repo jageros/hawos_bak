@@ -19,6 +19,7 @@ import (
 	"github.com/jageros/hawos/protos/pbf"
 	"github.com/jageros/hawos/transport"
 	"github.com/jageros/hawos/transport/ws"
+	"time"
 )
 
 var consumerHandler ws.Writer
@@ -101,7 +102,7 @@ func (h *handler) Cleanup(assignment sarama.ConsumerGroupSession) error {
 }
 func (h *handler) ConsumeClaim(assignment sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for msg := range claim.Messages() {
-
+		start := time.Now()
 		if msg == nil {
 			log.Infof("kafka ConsumeClaim recv msg=nil")
 			continue
@@ -121,6 +122,8 @@ func (h *handler) ConsumeClaim(assignment sarama.ConsumerGroupSession, claim sar
 		//log.Debugf("Group:%s Topic:%s Partition:%d Offset:%d  UseCnt:%d", h.name, msg.Topic, msg.Partition, msg.Offset, len(uids))
 		// 手动确认消息
 		assignment.MarkMessage(msg, "")
+		take := time.Now().Sub(start).String()
+		log.Debugf("Kafka Consume Msg take: %s", take)
 	}
 	return nil
 }

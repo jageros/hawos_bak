@@ -21,6 +21,7 @@ import (
 	"github.com/jageros/hawos/protos/pbf"
 	"github.com/jageros/hawos/transport"
 	"github.com/jageros/hawos/transport/queues"
+	"time"
 )
 
 var _ queues.IQueue = &Producer{}
@@ -43,6 +44,7 @@ func NewProducer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) *
 }
 
 func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target) error {
+	start := time.Now()
 	im, err := meta.GetMeta(msgId)
 	if err != nil {
 		return err
@@ -67,7 +69,10 @@ func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target
 		Targets: target,
 	}
 
-	return p.Push(msg)
+	err = p.Push(msg)
+	take := time.Now().Sub(start).String()
+	log.Infof("Kafka Push Msg take: %s", take)
+	return err
 }
 
 func (p *Producer) Push(msg *pbf.QueueMsg) error {

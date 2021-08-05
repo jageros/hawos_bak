@@ -43,6 +43,7 @@ func (c *Consumer) RegistryHandler(w ws.Writer) {
 }
 
 func (c *Consumer) HandleMessage(msg *nsq.Message) error {
+	start := time.Now()
 	if c.handler == nil {
 		log.Errorf("Nsq Consumer Handle = nil")
 		return nil
@@ -57,7 +58,10 @@ func (c *Consumer) HandleMessage(msg *nsq.Message) error {
 
 	target := new(ws.Target).CopyPbTarget(arg.Targets)
 	log.Debugf("Nsq consumer write msg to client, Target=%+v", target)
-	return c.handler.Write(arg.Data, target)
+	err = c.handler.Write(arg.Data, target)
+	take := time.Now().Sub(start)
+	log.Debugf("Nsq Consumer Msg take: %s", take)
+	return err
 }
 
 func (c *Consumer) Init(id, name string) (err error) {
