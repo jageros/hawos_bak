@@ -26,14 +26,16 @@ redis:
 #  user: ""
 #  password: ""
 
-nsq:
-  addrs:
-    - "127.0.0.1:4161"
-  #  user: ""
-  #  password: ""
-
-kafka:
+queue:
+  type: "kafka"
   addrs:
     - "127.0.0.1:9092"
   #  user: ""
   #  password: ""
+
+#queue:
+#  type: "nsq"
+#  addrs:
+#    - "127.0.0.1:4161"
+#    user: ""
+#    password: ""

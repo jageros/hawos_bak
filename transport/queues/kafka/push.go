@@ -20,11 +20,8 @@ import (
 	"github.com/jageros/hawos/protos/meta"
 	"github.com/jageros/hawos/protos/pbf"
 	"github.com/jageros/hawos/transport"
-	"github.com/jageros/hawos/transport/queues"
 	"time"
 )
-
-var _ queues.IQueue = &Producer{}
 
 type Producer struct {
 	*transport.BaseServer

@@ -35,8 +35,7 @@ var (
 	HttpOption  transport.SvrOpFn
 	RpcOption   transport.SvrOpFn
 	WsOption    transport.SvrOpFn
-	NsqOption   transport.SvrOpFn
-	KafkaOption transport.SvrOpFn
+	QueueOption transport.SvrOpFn
 	EtcdOption  etcd.OpFn
 	RedisOption db.OpFn
 	Options     *Option
@@ -54,8 +53,8 @@ type Option struct {
 	WsPort       int
 	EtcdAddrs    string
 	RedisAddrs   string
-	NsqAddrs     string
-	KafkaAddrs   string
+	QueueType    transport.ProtoTy
+	QueueAddrs   string
 	FrontendAddr string
 	Config       string
 	LogDir       string
@@ -130,14 +129,16 @@ func (op *Option) parseFromYaml(cfg *yaml.Config) {
 		if cfg.Redis.Password != "" {
 			op.RedisPasswd = cfg.Redis.Password
 		}
-		// === nsq ===
-		if len(cfg.Nsq.Addrs) > 0 {
-			op.NsqAddrs = strings.Join(cfg.Nsq.Addrs, ";")
+		// === queue ===
+		if len(cfg.Queue.Addrs) > 0 {
+			if cfg.Queue.Type == "nsq" {
+				op.QueueType = transport.Nsq
+			} else {
+				op.QueueType = transport.Kafka
+			}
+			op.QueueAddrs = strings.Join(cfg.Queue.Addrs, ";")
 		}
-		// === kafka ===
-		if len(cfg.Kafka.Addrs) > 0 {
-			op.KafkaAddrs = strings.Join(cfg.Kafka.Addrs, ";")
-		}
+
 		// === frontend addr ===
 		if cfg.Listen.FrontendAddr != "" {
 			op.FrontendAddr = cfg.Listen.FrontendAddr
@@ -158,8 +159,8 @@ func defaultOption() *Option {
 		WsPort:     8050,
 		EtcdAddrs:  "127.0.0.1:2379",
 		RedisAddrs: "127.0.0.1:7001;127.0.0.1:7002;127.0.0.1:7003;127.0.0.1:7004;127.0.0.1:7005;127.0.0.1:7006",
-		NsqAddrs:   "127.0.0.1:4161",
-		KafkaAddrs: "127.0.0.1:9092",
+		QueueType:  transport.Kafka,
+		QueueAddrs: "127.0.0.1:9092",
 		LogDir:     "logs",
 	}
 	return op
@@ -185,9 +186,9 @@ func Parse(name string, opts ...optFunc) {
 		wsListenPort   = flag.Int("ws-port", dp.WsPort, "Websocket server port")
 		etcdAddr       = flag.String("etcd-addrs", dp.EtcdAddrs, "Etcd addrs, use ; split")
 		redisAddr      = flag.String("redis-addrs", dp.RedisAddrs, "Redis addrs, use ; split")
-		nsqAddr        = flag.String("nsq-addrs", dp.NsqAddrs, "NSQ addrs, use ; split")
-		kafkaAddr      = flag.String("kafka-addrs", dp.KafkaAddrs, "kafka addrs, use ; split")
 		frontendAddr   = flag.String("frontend-addr", dp.FrontendAddr, "frontend addr")
+		queueType      = flag.String("queue-type", dp.QueueType.String(), "queue type, optional: nsq/kafka")
+		queueAddr      = flag.String("queue-addrs", dp.QueueAddrs, "queue addrs, use ; split")
 	)
 	flag.Parse()
 
@@ -209,8 +210,8 @@ func Parse(name string, opts ...optFunc) {
 	Options.WsPort = vInt(Options.WsPort, dp.WsPort, *wsListenPort)
 	Options.EtcdAddrs = vString(Options.EtcdAddrs, dp.EtcdAddrs, *etcdAddr)
 	Options.RedisAddrs = vString(Options.RedisAddrs, dp.RedisAddrs, *redisAddr)
-	Options.NsqAddrs = vString(Options.NsqAddrs, dp.NsqAddrs, *nsqAddr)
-	Options.KafkaAddrs = vString(Options.KafkaAddrs, dp.KafkaAddrs, *kafkaAddr)
+	Options.QueueType = transport.ProtoTy(vString(Options.QueueType.String(), dp.QueueType.String(), *queueType))
+	Options.QueueAddrs = vString(Options.QueueAddrs, dp.QueueAddrs, *queueAddr)
 	Options.FrontendAddr = vString(Options.FrontendAddr, dp.FrontendAddr, *frontendAddr)
 	Options.LogDir = vString(Options.LogDir, dp.LogDir, *logPath)
 
@@ -262,16 +263,10 @@ func Parse(name string, opts ...optFunc) {
 		opt.Password = Options.RedisUser
 	}
 
-	nsqAddrs := strings.Split(Options.NsqAddrs, ";")
-	NsqOption = func(opt *transport.Option) {
-		opt.Protocol = transport.Nsq
-		opt.Endpoints = nsqAddrs
-	}
-
-	kafkaAddrs := strings.Split(Options.KafkaAddrs, ";")
-	KafkaOption = func(opt *transport.Option) {
-		opt.Protocol = transport.Kafka
-		opt.Endpoints = kafkaAddrs
+	queueAddrs := strings.Split(Options.QueueAddrs, ";")
+	QueueOption = func(opt *transport.Option) {
+		opt.Protocol = Options.QueueType
+		opt.Endpoints = queueAddrs
 	}
 }
 

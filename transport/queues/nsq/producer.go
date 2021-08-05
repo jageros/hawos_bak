@@ -21,14 +21,11 @@ import (
 	"github.com/jageros/hawos/protos/pbf"
 	"github.com/jageros/hawos/transport"
 	"github.com/jageros/hawos/transport/http/httpc"
-	"github.com/jageros/hawos/transport/queues"
 	"github.com/nsqio/go-nsq"
 	"math/rand"
 	"sync"
 	"time"
 )
-
-var _ queues.IQueue = &Producer{}
 
 type Producer struct {
 	*transport.BaseServer

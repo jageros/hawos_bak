@@ -18,7 +18,7 @@ import (
 )
 
 type Config struct {
-	AppID int `yaml:"app_id"`
+	AppID  int `yaml:"app_id"`
 	Listen struct {
 		HttpIp       string `yaml:"http_ip"`
 		HttpPort     int    `yaml:"http_port"`
@@ -39,16 +39,17 @@ type Config struct {
 		User     string   `yaml:"user"`
 		Password string   `yaml:"password"`
 	}
-	Nsq struct {
+	Queue struct {
+		Type     string   `yaml:"type"`
 		Addrs    []string `yaml:"addrs"`
 		User     string   `yaml:"user"`
 		Password string   `yaml:"password"`
 	}
-	Kafka struct {
-		Addrs    []string `yaml:"addrs"`
-		User     string   `yaml:"user"`
-		Password string   `yaml:"password"`
-	}
+	//Kafka struct {
+	//	Addrs    []string `yaml:"addrs"`
+	//	User     string   `yaml:"user"`
+	//	Password string   `yaml:"password"`
+	//}
 }
 
 func Parse(path string) *Config {
