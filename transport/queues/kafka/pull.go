@@ -101,8 +101,13 @@ func (h *handler) Cleanup(assignment sarama.ConsumerGroupSession) error {
 	return nil
 }
 func (h *handler) ConsumeClaim(assignment sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	end := time.Now()
 	for msg := range claim.Messages() {
 		start := time.Now()
+		take2 := start.Sub(end)
+		if take2 > time.Second {
+			log.Infof("Kafka Recv Msg take: %s", take2.String())
+		}
 		if msg == nil {
 			log.Infof("kafka ConsumeClaim recv msg=nil")
 			continue
@@ -119,11 +124,13 @@ func (h *handler) ConsumeClaim(assignment sarama.ConsumerGroupSession, claim sar
 		if err != nil {
 			log.Errorf("kafka ConsumeClaim msg handle return err=%v", err)
 		}
-		//log.Debugf("Group:%s Topic:%s Partition:%d Offset:%d  UseCnt:%d", h.name, msg.Topic, msg.Partition, msg.Offset, len(uids))
-		// 手动确认消息
-		assignment.MarkMessage(msg, "")
-		take := time.Now().Sub(start).String()
-		log.Debugf("Kafka Consume Msg take: %s", take)
+
+		assignment.MarkMessage(msg, "") // 确认消息
+		end = time.Now()
+		take := end.Sub(start)
+		if take > time.Second {
+			log.Infof("Kafka Consume Msg take: %s", take.String())
+		}
 	}
 	return nil
 }

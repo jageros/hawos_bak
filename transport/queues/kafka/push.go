@@ -67,8 +67,11 @@ func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target
 	}
 
 	err = p.Push(msg)
-	take := time.Now().Sub(start).String()
-	log.Infof("Kafka Push Msg take: %s", take)
+	end := time.Now()
+	take := end.Sub(start)
+	if take > time.Second {
+		log.Infof("Kafka Push Msg take: %s", take.String())
+	}
 	return err
 }
 

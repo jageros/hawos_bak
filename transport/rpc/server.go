@@ -57,10 +57,15 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) Register(registrar registry.Registrar) error {
+	if registrar == nil {
+		return nil
+	}
 	s.register = registrar
 	return s.register.Register(s.Ctx, s.Options.BuildServiceInstance())
 }
 
 func (s *Server) Deregister() {
-	s.register.Deregister(s.Ctx, s.Options.BuildServiceInstance())
+	if s.register != nil {
+		s.register.Deregister(s.Ctx, s.Options.BuildServiceInstance())
+	}
 }

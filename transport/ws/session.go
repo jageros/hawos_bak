@@ -190,8 +190,11 @@ func (s *session) startWriteMsg(g *sync.WaitGroup) {
 				s.cancel()
 				return
 			}
-			take := time.Now().Sub(start).String()
-			log.Debugf("Write Msg to Client uid=%s take %s", s.uid, take)
+			end := time.Now()
+			take := end.Sub(start)
+			if take > time.Second {
+				log.Infof("Write Msg to Client uid=%s take %s", s.uid, take.String())
+			}
 		}
 	}
 }

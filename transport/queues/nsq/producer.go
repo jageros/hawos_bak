@@ -103,8 +103,11 @@ func (p *Producer) PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target
 		Targets: target,
 	}
 	err = p.Push(msg)
-	take := time.Now().Sub(start).String()
-	log.Debugf("Nsq Push Msg take: %s", take)
+	end := time.Now()
+	take := end.Sub(start)
+	if take > time.Second {
+		log.Infof("Nsq Push Msg take: %s", take.String())
+	}
 	return err
 }
 

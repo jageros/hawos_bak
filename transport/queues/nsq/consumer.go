@@ -19,6 +19,7 @@ import (
 	"github.com/jageros/hawos/transport"
 	"github.com/jageros/hawos/transport/ws"
 	"github.com/nsqio/go-nsq"
+	"sync/atomic"
 	"time"
 )
 
@@ -28,6 +29,7 @@ type Consumer struct {
 	csr     *nsq.Consumer
 	handler ws.Writer
 	*transport.BaseServer
+	csrCnt int64
 }
 
 func NewConsumer(ctx context.Context, topic string, opts ...transport.SvrOpFn) *Consumer {
@@ -43,6 +45,9 @@ func (c *Consumer) RegistryHandler(w ws.Writer) {
 }
 
 func (c *Consumer) HandleMessage(msg *nsq.Message) error {
+	atomic.AddInt64(&c.csrCnt, 1)
+	defer atomic.AddInt64(&c.csrCnt, -1)
+	log.Debugf("HandleMessage Cnt=%d", c.csrCnt)
 	start := time.Now()
 	if c.handler == nil {
 		log.Errorf("Nsq Consumer Handle = nil")
@@ -59,8 +64,11 @@ func (c *Consumer) HandleMessage(msg *nsq.Message) error {
 	target := new(ws.Target).CopyPbTarget(arg.Targets)
 	log.Debugf("Nsq consumer write msg to client, Target=%+v", target)
 	err = c.handler.Write(arg.Data, target)
-	take := time.Now().Sub(start)
-	log.Debugf("Nsq Consumer Msg take: %s", take)
+	end := time.Now()
+	take := end.Sub(start)
+	if take > time.Second {
+		log.Infof("Nsq Consumer Msg take: %s", take.String())
+	}
 	return err
 }
 

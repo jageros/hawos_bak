@@ -73,8 +73,8 @@ func (s *Server) ConnCnt() int {
 func New(ctx context.Context, opfs ...transport.SvrOpFn) *Server {
 	ss := &Server{
 		BaseServer: transport.NewBaseServer(ctx, opfs...),
-		sessions: map[string]*session{},
-		rw:       &sync.RWMutex{},
+		sessions:   map[string]*session{},
+		rw:         &sync.RWMutex{},
 	}
 	ss.Options.Protocol = transport.WS
 
@@ -125,12 +125,13 @@ func (s *Server) sendToGroup(data []byte, groupId string, unlessUids ...string) 
 	for _, ulid := range unlessUids {
 		unless[ulid] = true
 	}
-
 	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
+		var sendCnt int
 		for _, sess := range s.sessions {
 			if sess.groupId == groupId && !unless[sess.uid] {
+				sendCnt++
 				gw.Add(1)
 				go func() {
 					defer gw.Done()
@@ -147,11 +148,14 @@ func (s *Server) sendToGroup(data []byte, groupId string, unlessUids ...string) 
 		}
 		s.rw.RUnlock()
 		gw.Wait()
+		log.Debugf("sendToGroup ConnCnt=%d, SendCnt=%d", len(s.sessions), sendCnt)
 		return nil
 	})
 }
 
 func (s *Server) sendUnless(data []byte, unlessUids ...string) error {
+	sCnt := len(s.sessions)
+	log.Debugf("sendUnless ConnCnt=%d, SendCnt=%d", sCnt, sCnt-len(unlessUids))
 	unless := map[string]bool{}
 	for _, ulid := range unlessUids {
 		unless[ulid] = true
@@ -183,6 +187,7 @@ func (s *Server) sendUnless(data []byte, unlessUids ...string) error {
 }
 
 func (s *Server) sendToUsers(data []byte, uids ...string) error {
+	log.Debugf("sendToUsers ConnCnt=%d, SendCnt=%d", len(s.sessions), len(uids))
 	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
@@ -222,6 +227,7 @@ func (s *Server) Write(data []byte, target *Target) error {
 }
 
 func (s *Server) Broadcast(data []byte) error {
+	log.Debugf("Broadcast ConnCnt=%d", len(s.sessions))
 	return recover.CatchPanic(func() error {
 		s.rw.RLock()
 		gw := &sync.WaitGroup{}
