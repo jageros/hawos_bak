@@ -23,9 +23,13 @@ import (
 )
 
 type IQueue interface {
+	Producer
+	transport.IServer
+}
+
+type Producer interface {
 	PushProtoMsg(msgId int32, arg interface{}, target *pbf.Target) error
 	Push(msg *pbf.QueueMsg) error
-	transport.IServer
 }
 
 func NewProducer(ctx context.Context, topic string, opfs ...transport.SvrOpFn) (IQueue, error) {
