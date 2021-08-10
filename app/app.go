@@ -21,8 +21,6 @@ import (
 	"github.com/jageros/hawos/transport"
 	"github.com/jageros/hawos/uuid"
 	"github.com/oklog/oklog/pkg/group"
-	"github.com/oklog/run"
-	"syscall"
 )
 
 type Application struct {
@@ -130,12 +128,11 @@ func (a *Application) Run() {
 
 	}
 
-	// 监听系统信号
-	exFn, errFn := run.SignalHandler(ctx, syscall.SIGINT, syscall.SIGTERM)
 	g.Add(func() error {
-		return exFn()
+		<-ctx.Done()
+		return ctx.Err()
 	}, func(err error) {
-		errFn(err)
+		cancel()
 	})
 
 	log.Infof(">>>>>>>>> ApplicationStop: 【%v】", g.Run())

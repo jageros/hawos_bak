@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/jageros/hawos/db"
+	"github.com/jageros/hawos/log"
 	"time"
 )
 
@@ -46,7 +47,12 @@ func Initialize(ctx context.Context, opts ...db.OpFn) {
 		for {
 			select {
 			case <-RDB.Ctx.Done():
-				RDB.Close()
+				err := RDB.Close()
+				if err != nil {
+					log.Infof("Redis Close err: %v", err)
+				} else {
+					log.Infof("Redis Close successful!")
+				}
 				return
 			case <-tk.C:
 				RDB.Ping(RDB.Ctx)
