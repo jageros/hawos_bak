@@ -11,7 +11,6 @@
 package yaml
 
 import (
-	"flag"
 	"github.com/jageros/hawos/log"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -53,8 +52,6 @@ type Config struct {
 }
 
 func Parse(path string) *Config {
-
-	flag.Parse()
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatalf("Read Config yaml file err: %v", err)

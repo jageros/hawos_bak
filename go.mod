@@ -1,6 +1,6 @@
 module github.com/jageros/hawos
 
-go 1.16
+go 1.17
 
 require (
 	github.com/Shopify/sarama v1.29.1
@@ -13,7 +13,6 @@ require (
 	github.com/mcuadros/go-gin-prometheus v0.1.0
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/oklog/oklog v0.3.2
-	github.com/oklog/run v1.1.0
 	github.com/satori/go.uuid v1.2.0
 	go.etcd.io/etcd/client/v3 v3.5.0-rc.1
 	go.uber.org/zap v1.17.0
