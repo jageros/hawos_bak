@@ -27,7 +27,7 @@ type zapAdapter struct {
 	MaxAge      int    // 日志文件保存的时间，单位(天)
 	Compress    bool   // 是否压缩
 	Caller      bool   // 日志是否需要显示调用位置
-	Stdout      bool   // 是否需要控制台输出
+	FileOut     bool   // 是否需要文件输出
 	Source      string // 标志
 
 	logger *zap.Logger
@@ -54,17 +54,17 @@ func (z *zapAdapter) setCaller(caller bool) {
 	z.Caller = caller
 }
 
-func (z *zapAdapter) setStdout() {
-	z.Stdout = true
+func (z *zapAdapter) setFileOut(path string) {
+	z.FileOut = true
+	z.Path = path
 }
 
 func (z *zapAdapter) setSource(source string) {
 	z.Source = source
 }
 
-func NewZapAdapter(path, level string) *zapAdapter {
+func NewZapAdapter(level string) *zapAdapter {
 	return &zapAdapter{
-		Path:        path,
 		Level:       level,
 		MaxFileSize: 1024,
 		MaxBackups:  3,
@@ -86,9 +86,9 @@ func (z *zapAdapter) createLumberjackHook() *lumberjack.Logger {
 }
 
 func (z *zapAdapter) Build() {
-	w := zapcore.AddSync(z.createLumberjackHook())
-	if z.Stdout {
-		w = zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), w)
+	w := zapcore.AddSync(os.Stdout)
+	if z.FileOut {
+		w = zapcore.NewMultiWriteSyncer(zapcore.AddSync(z.createLumberjackHook()), w)
 	}
 
 	var level zapcore.Level

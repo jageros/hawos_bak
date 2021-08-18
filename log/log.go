@@ -41,7 +41,7 @@ var logger *Log
 type Log struct {
 	Path           string
 	Level          string
-	NeedRequestLog bool // 是否需要request.log
+	NeedRequestLog bool
 	adapters       map[string]*zapAdapter
 }
 
@@ -103,11 +103,11 @@ func SetCaller() Option {
 	})
 }
 
-func SetStdout() Option {
+func SetFileOut(path string, needRequestLog bool) Option {
 	return logOptionFunc(func(log *Log) {
-		for i, _ := range log.adapters {
-			log.adapters[i].setStdout()
-		}
+		log.NeedRequestLog = needRequestLog
+		log.adapters[FileTypeRequest].setFileOut(fmt.Sprintf("%s.Request", path))
+		log.adapters[FileTypeLog].setFileOut(path)
 	})
 }
 
@@ -120,10 +120,9 @@ func SetSource(source string) Option {
 }
 
 // Init init logger
-func Init(path, level string, needRequestLog bool, options ...Option) {
-	logger = &Log{Path: path, Level: level}
-	logger.NeedRequestLog = needRequestLog
-	logger.createFiles(level, needRequestLog, options...)
+func Init(level string, options ...Option) {
+	logger = &Log{Level: level}
+	logger.createFiles(level, options...)
 }
 
 // Sync flushes buffer, if any
@@ -165,10 +164,10 @@ func (l *Log) maxAge(level string) int {
 	return 0
 }
 
-func (l *Log) createFiles(level string, needRequestLog bool, options ...Option) {
+func (l *Log) createFiles(level string, options ...Option) {
 	adapters := make(map[string]*zapAdapter, 2)
-	adapters[FileTypeLog] = NewZapAdapter(fmt.Sprintf("%s", l.Path), level)
-	adapters[FileTypeRequest] = NewZapAdapter(fmt.Sprintf("%s.Request", l.Path), InfoLevel)
+	adapters[FileTypeLog] = NewZapAdapter(level)
+	adapters[FileTypeRequest] = NewZapAdapter(InfoLevel)
 	l.adapters = adapters
 
 	for _, opt := range options {
